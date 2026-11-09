@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Diagnóstico da Base de Dados</h2>
+    <ul>
+        <li><strong>Tamanho da base antes:</strong> {{ estatisticas.total_original }} registros</li>
+        <li><strong>Tamanho da base depois (limpa):</strong> {{ estatisticas.total_limpos }} registros</li>
+        <li><strong>Registros com erro (excluídos):</strong> {{ estatisticas.total_excedentes }} registros</li>
+        <li><strong>Quantidade de Colunas:</strong> {{ estatisticas.colunas }} colunas</li>
+    </ul>
+
+    <hr>
+    
+    <h2>Amostra dos Dados</h2>
+    <p>Abaixo estão os 5 primeiros registros válidos:</p>
+    {{ amostra | safe }}
+
+    <br><br>
+{% endblock %}

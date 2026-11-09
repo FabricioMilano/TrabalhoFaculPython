@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Cursos Udemy</title>
+    <!-- Seus colegas colocarão os links de CSS aqui no futuro -->
+</head>
+<body>
+
+    <main>
+        <!-- As mensagens de erro do Flask aparecerão aqui -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul>
+            {% for message in messages %}
+              <li><strong>{{ message }}</strong></li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <!-- O conteúdo das outras páginas será injetado aqui -->
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
