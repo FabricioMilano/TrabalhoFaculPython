@@ -1,9 +1,13 @@
+<!-- Reaproveita a estrutura principal da página, como a área de alertas de erro -->
 {% extends "base.html" %}
 
 {% block content %}
-    
+    <!-- Formulário configurado especificamente para envio de arquivos (multipart/form-data) para a rota principal -->
     <form action="/" method="POST" enctype="multipart/form-data">
+        
+        <!-- Bloqueia a seleção no navegador para aceitar apenas a extensão CSV por segurança -->
         <input type="file" name="file" accept=".csv" required>
+        
         <button type="submit">Processar Arquivo</button>
     </form>
 {% endblock %}

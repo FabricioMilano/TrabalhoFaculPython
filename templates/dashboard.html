@@ -1,19 +1,130 @@
+<!-- Estende o layout principal, aproveitando o cabeçalho e a área de mensagens de erro -->
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Diagnóstico da Base de Dados</h2>
+    <h1>Página de Resultados</h1>
+
+    <hr>
+    
+    <h2>Validação + Pandas</h2>
+    
+    <h3>Diagnóstico da Base de Dados</h3>
     <ul>
+        <!-- Exibe os dados estatísticos processados pelo Pandas no backend -->
         <li><strong>Tamanho da base antes:</strong> {{ estatisticas.total_original }} registros</li>
         <li><strong>Tamanho da base depois (limpa):</strong> {{ estatisticas.total_limpos }} registros</li>
         <li><strong>Registros com erro (excluídos):</strong> {{ estatisticas.total_excedentes }} registros</li>
         <li><strong>Quantidade de Colunas:</strong> {{ estatisticas.colunas }} colunas</li>
     </ul>
 
-    <hr>
-    
-    <h2>Amostra dos Dados</h2>
+    <h3>Amostra dos Dados</h3>
     <p>Abaixo estão os 5 primeiros registros válidos:</p>
+    <!-- O filtro 'safe' permite que a tabela HTML gerada pelo Pandas seja renderizada corretamente no navegador -->
     {{ amostra | safe }}
 
+    <hr>
+    
+    <h2>Análise + 3 Gráficos</h2>
+        
+    <!-- Verifica se os gráficos foram gerados no Python antes de tentar exibi-los -->
+    {% if graficos %}
+        <div>
+            <div>
+                <h3>Fatores de Influência (O que faz o preço subir?)</h3>
+                <p>Barras maiores para a direita indicam as características que mais encarecem o curso.</p>
+                <!-- O SRC recebe a string base64 enviada pelo dicionário 'graficos_gerados' no app.py -->
+                <img src="{{ graficos.grafico_1 }}" alt="Gráfico de Correlação com o Preço">
+            </div>
+            
+            <div>
+                <h3>Importância (O que o modelo achou mais relevante?)</h3>
+                <p>Exibe o peso que o modelo deu para as principais colunas ao decidir o preço.</p>
+                <img src="{{ graficos.grafico_2 }}" alt="Gráfico de Importância das Variáveis">
+            </div>
+            
+            <div>
+                <h3>Realidade vs. Previsão</h3>
+                <p>Quanto mais próximos os pontos estiverem da linha tracejada vermelha, mais precisos foram os acertos.</p>
+                <img src="{{ graficos.grafico_3 }}" alt="Gráfico Preço Real vs Previsto">
+            </div>
+        </div>
+    {% endif %}
+
+    <hr>
+
+    <h2>Treino, Teste, Comparação e Avaliação</h2>
+    
+    <!-- Renderiza os resultados do treinamento e a lógica de decisão de qual modelo usar -->
+    {% if resultados %}
+    <ul>
+        <li><strong>Divisão dos Dados:</strong> {{ resultados.proporcao_treino }} Treino / {{ resultados.proporcao_teste }} Teste (Random State: {{ resultados.random_state }})</li>
+        <li><strong>Erro Médio (MAE) - Linear Regression:</strong> ${{ resultados.mae_linear }}</li>
+        <li><strong>Erro Médio (MAE) - Decision Tree Regressor:</strong> ${{ resultados.mae_arvore }}</li>
+        <li><strong>Modelo Escolhido (Vencedor):</strong> {{ resultados.melhor_modelo }}</li>
+        <li><strong>Justificativa da Escolha:</strong> {{ resultados.justificativa }}</li>
+    </ul>
+    {% endif %}
+
+    <hr>
+    
+    <h2>Formulário e Previsão em HTML</h2>
+    <p>O melhor modelo irá prever com os dados preenchidos.</p>
+
+    <!-- Formulário dinâmico que envia dados (POST) para a mesma URL que carregou a página -->
+    <form method="POST" action="/dashboard/{{ filename }}">
+        
+        <div>
+            <label><strong>Duração do Curso (em horas):</strong></label><br>
+            <!-- O atributo 'value' preserva a digitação do usuário se o formulário já tiver sido submetido antes -->
+            <input type="number" step="0.1" min="0" name="content_duration" required 
+                   value="{{ dados_inseridos.content_duration if dados_inseridos else '' }}"
+                   placeholder="Ex: 3.5">
+        </div>
+        <br>
+        
+        <div>
+            <label><strong>Quantidade de Aulas:</strong></label><br>
+            <input type="number" min="1" step="1" name="num_lectures" required 
+                   value="{{ dados_inseridos.num_lectures if dados_inseridos else '' }}"
+                   placeholder="Ex: 20">
+        </div>
+        <br>
+        
+        <div>
+            <label><strong>Nível de Dificuldade:</strong></label><br>
+            <!-- Preenche a lista suspensa iterando sobre os níveis extraídos pelo Pandas no backend -->
+            <select name="level" required>
+                <option value="">-- Selecione o Nível --</option>
+                {% for nivel in niveis %}
+                    <option value="{{ nivel }}" {% if dados_inseridos and dados_inseridos.level == nivel %}selected{% endif %}>{{ nivel }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        
+        <div>
+            <label><strong>Assunto / Área de Estudo:</strong></label><br>
+            <!-- Preenche a lista suspensa iterando sobre as áreas de estudo únicas extraídas do CSV -->
+            <select name="subject" required>
+                <option value="">-- Selecione o Assunto --</option>
+                {% for assunto in assuntos %}
+                    <option value="{{ assunto }}" {% if dados_inseridos and dados_inseridos.subject == assunto %}selected{% endif %}>{{ assunto }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        
+        <button type="submit">Calcular Previsão</button>
+    </form>
+
+    <!-- Exibe a caixa de resultado da predição apenas se a IA já calculou o valor -->
+    {% if previsao_resultado %}
+        <br>
+        <div>
+            <h3>Previsão em HTML: {{ previsao_resultado }}</h3>
+            <p>Este é o valor estimado pelo modelo de Machine Learning para o curso configurado acima.</p>
+        </div>
+    {% endif %}
+    
     <br><br>
 {% endblock %}
